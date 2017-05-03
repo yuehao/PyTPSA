@@ -11,18 +11,28 @@ class tpsa(object):
             exit(-1)
 
         if copy_tps is not None:
-            self.__tps=copy_tps
+            self._tps=copy_tps
             return;
 
         if dtype == float:
-            self.__tps = tlib.DCTPS(value)
-            if variable > 0 and variable <= tpsa.dimension:
-                self.__tps.assign(value, variable)
+            self._tps = tlib.DCTPS(value)
+
+            if variable > 0:
+                if variable <= tpsa.dimension:
+                    self._tps.assign(value, variable)
+                else:
+                    raise Exception('Dimension out of range')
+
+
 
         elif dtype == complex:
-            self.__tps = tlib.CCTPS(value)
-            if variable > 0 and variable <= tpsa.dimension:
-                self.__tps.assign(value, variable)
+            self._tps = tlib.CCTPS(value)
+
+            if variable > 0:
+                if variable <= tpsa.dimension:
+                    self._tps.assign(value, variable)
+                else:
+                    raise Exception('Dimension out of range')
 
         else:
             print("Unknown type")
@@ -37,94 +47,94 @@ class tpsa(object):
         tlib.CCTPS.Initialize(dim, order)
 
     def cst(self):
-        return self.__tps.cst()
+        return self._tps.cst()
 
     def findindex(self, power_list):
-        return self.__tps.findindex(power_list)
+        return self._tps.findindex(power_list)
 
     def findpower(self, index):
-        return self.__tps.findpower(index)
+        return self._tps.findpower(index)
 
     def get_dim(self):
-        return self.__tps.get_dim()
+        return self._tps.get_dim()
 
     def get_degree(self):
-        return self.__tps.get_degree()
+        return self._tps.get_degree()
 
     def get_terms(self):
-        return self.__tps.get_terms()
+        return self._tps.get_terms()
 
     def element(self, index):
-        return self.__tps.element(index)
+        return self._tps.element(index)
 
     def evaluate(self, vectors):
-        return self.__tps.evaluate(vectors)
+        return self._tps.evaluate(vectors)
 
     def derivative(self, dim, order=1):
-        return tpsa(copy_tps=self.__tps.derivative(dim, order))
+        return tpsa(copy_tps=self._tps.derivative(dim, order))
 
     def __add__(self, other):
-        return tpsa(copy_tps=(self.__tps + other))
+        return tpsa(copy_tps=(self._tps + other))
 
     def __radd__(self, other):
-        return tpsa(copy_tps=(self.__tps + other))
+        return tpsa(copy_tps=(self._tps + other))
 
     def __sub__(self, other):
-        return tpsa(copy_tps=(self.__tps - other))
+        return tpsa(copy_tps=(self._tps - other))
 
     def __rsub__(self, other):
-        return tpsa(copy_tps=(other - self.__tps))
+        return tpsa(copy_tps=(other - self._tps))
 
     def __mul__(self, other):
-        return tpsa(copy_tps=(self.__tps * other))
+        return tpsa(copy_tps=(self._tps * other))
 
     def __rmul__(self, other):
-        return tpsa(copy_tps=(self.__tps * other))
+        return tpsa(copy_tps=(self._tps * other))
 
     def __div__(self, other):
-        return tpsa(copy_tps=(self.__tps / other))
+        return tpsa(copy_tps=(self._tps / other))
 
     def __rdiv__(self, other):
-        return tpsa(copy_tps=(other / self.__tps))
+        return tpsa(copy_tps=(other / self._tps))
 
     def __neg__(self):
-        return tpsa(copy_tps=self.__tps.__neg__())
+        return tpsa(copy_tps=self._tps.__neg__())
 
     def __pos__(self):
-        return tpsa(copy_tps=self.__tps.__pos__())
+        return tpsa(copy_tps=self._tps.__pos__())
 
     def __repr__(self):
-        return self.__tps.__repr__()
+        return self._tps.__repr__()
 
 def inv(a):
-    return tpsa(copy_tps=tlib.inv(a.__tps))
+    return tpsa(copy_tps=tlib.inv(a._tps))
 
 def exp(a):
-    return tpsa(copy_tps=tlib.exp(a.__tps))
+    return tpsa(copy_tps=tlib.exp(a._tps))
 
 def log(a):
-    return tpsa(copy_tps=tlib.log(a.__tps))
+    return tpsa(copy_tps=tlib.log(a._tps))
 
 def sqrt(a):
-    return tpsa(copy_tps=tlib.sqrt(a.__tps))
+    return tpsa(copy_tps=tlib.sqrt(a._tps))
 
 def pow(a):
-    return tpsa(copy_tps=tlib.pow(a.__tps))
+    return tpsa(copy_tps=tlib.pow(a._tps))
 
 def sin(a):
-    return tpsa(copy_tps=tlib.sin(a.__tps))
+    return tpsa(copy_tps=tlib.sin(a._tps))
 
 def cos(a):
-    return tpsa(copy_tps=tlib.cos(a.__tps))
+    return tpsa(copy_tps=tlib.cos(a._tps))
 
 def tan(a):
-    return tpsa(copy_tps=tlib.tan(a.__tps))
+    return tpsa(copy_tps=tlib.tan(a._tps))
 
 def sinh(a):
-    return tpsa(copy_tps=tlib.sinh(a.__tps))
+    return tpsa(copy_tps=tlib.sinh(a._tps))
 
 def cosh(a):
-    return tpsa(copy_tps=tlib.cosh(a.__tps))
+    return tpsa(copy_tps=tlib.cosh(a._tps))
 
 
 

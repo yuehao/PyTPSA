@@ -293,7 +293,7 @@ CTPS<T>& CTPS<T>::operator*=(const CTPS<T>& M){
 template<class T>
 CTPS<T>& CTPS<T>::operator/=(const CTPS<T>& M){
 
-    if (abs(M.cst())==0) {
+    if (std::abs(M.cst())==0) {
         throw std::runtime_error("Divide by zero, in CTPS");
     }
     if (M.get_degree()==0){
