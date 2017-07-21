@@ -56,22 +56,29 @@ CTPS<T>::CTPS(const T& a){
 }
 
 template<class T>
+CTPS<T>::CTPS(const T& a, const int& n){
+    this->assign(a,n);
+}
+
+template<class T>
 CTPS<T>::CTPS(const CTPS<T> &M){
     int dim=TPS_Dim;
     this->degree=M.degree;
     this->terms=M.terms;
     this->map=M.map;
-
+    //this->index=M.index;
 
 }
 
 template<class T>
 unsigned long CTPS<T>::findindex(const std::vector<int>& indexmap) const{
     int dim=TPS_Dim;
+    if (indexmap.size()!= (dim+1)) throw std::runtime_error(std::string("Index map does not have correction length"));
     std::vector<int> sum((unsigned long)dim+1);
     sum[0]=indexmap[0];
 
     for (int i=1; i<=dim; i++) {
+        if (indexmap[i]<0) throw std::runtime_error(std::string("The index map has invalid component"));
         sum[i]=sum[i-1]-indexmap[i];
     }
     unsigned long result=0;
@@ -104,10 +111,11 @@ void CTPS<T>::assign(const T& a, const int& n_var){
         this->degree=1;
         this->terms=(unsigned long)CTPS<T>::TPS_Dim+1;
         map.clear();
-        //map.reserve(binomial(CTPS<T>::TPS_Dim+CTPS<T>::Maximum_TPS_Degree, CTPS<T>::TPS_Dim));
+        map.reserve(binomial(CTPS<T>::TPS_Dim+CTPS<T>::Maximum_TPS_Degree, CTPS<T>::TPS_Dim));
         map.assign(this->terms, T(0.0));
         this->map[n_var]=T(1.0);
         this->map[0]=a;
+        //this->index.insert(0);this->index.insert(n_var);
     }
     else throw std::runtime_error(std::string("Num of var out of range in CTPS"));
     
@@ -117,16 +125,17 @@ template <class T>
 void CTPS<T>::assign(const T& a){
     this->degree=0;
     this->terms=1;
-    map.clear();
-    map.reserve(binomial(CTPS<T>::TPS_Dim+CTPS<T>::Maximum_TPS_Degree, CTPS<T>::TPS_Dim));
-    map.assign(this->terms, T(0.0));
-    this->map[0]=a;
+    this->map.clear();
+    this->map.push_back(a);
+    //map.reserve(binomial(CTPS<T>::TPS_Dim+CTPS<T>::Maximum_TPS_Degree, CTPS<T>::TPS_Dim));
+    
+    //this->index.insert(0);
 }
 
 template<class T>
 const T CTPS<T>::element(const unsigned long & ind) const{
     if (ind<0 || ind >=terms) {
-        exit(0);
+        throw std::runtime_error(std::string("Element index out of range in CTPS"));
     }
     return map[ind];
 }
@@ -219,6 +228,7 @@ CTPS<T>& CTPS<T>::operator=(const CTPS<T> &M){
         this->degree=M.degree;
         this->terms=M.terms;
         this->map=M.map;
+        //this->index=M.index;
     }
     return *this;
 }
@@ -261,10 +271,18 @@ CTPS<T>& CTPS<T>::operator*=(const CTPS<T>& M){
         }
         return *this;
     }
+    if (this==&M) {
+        CTPS<T> mcopy(M);
+        return (*this)*=mcopy;
+    }
+    //std::vector<T> mmap=M.map;
+    //unsigned long msize=M.map.size();
+    int newdegree=this->degree+M.degree;
+
 
     CTPS<T>temp(*this);
     this->map.clear();
-    (*this).redegree(std::min(CTPS<T>::Maximum_TPS_Degree, this->degree+M.degree));
+    (*this).redegree(std::min(CTPS<T>::Maximum_TPS_Degree, newdegree));
     //#pragma omp parallel for schedule(dynamic)
     for (int i=0; i<temp.map.size(); i++ ) {
         if (std::abs(temp.map[i])==0) {
@@ -272,12 +290,14 @@ CTPS<T>& CTPS<T>::operator*=(const CTPS<T>& M){
         }
         std::vector<int> vthis=polymap.getindexmap(i);
         //#pragma omp parallel for schedule(dynamic)
-        for (int j=0; j<M.map.size();j++) {
+        //for (int j=0; j<msize();j++) {
+        unsigned long j_max=std::min(M.map.size(),binomial(this->TPS_Dim+this->Maximum_TPS_Degree-vthis[0],this->TPS_Dim));
+        for (int j=0; j< j_max;j++) {
             if (std::abs(M.map[j])==0) {
                 continue;
             }
             std::vector<int> vm=polymap.getindexmap(j);
-            if (vthis[0]+vm[0]>CTPS<T>::Maximum_TPS_Degree) break;
+            //if (vthis[0]+vm[0]>CTPS<T>::Maximum_TPS_Degree) break;
             std::vector<int> indexmap(vthis.size());
             for (int k=0; k<vthis.size(); k++) {
                 indexmap[k] = vthis[k] + vm[k];
@@ -295,6 +315,10 @@ CTPS<T>& CTPS<T>::operator/=(const CTPS<T>& M){
 
     if (std::abs(M.cst())==0) {
         throw std::runtime_error("Divide by zero, in CTPS");
+    }
+    if (this==&M) {
+        (*this)=CTPS<T>(T(1.0));
+        return *this;
     }
     if (M.get_degree()==0){
         #pragma omp parallel for schedule(static)

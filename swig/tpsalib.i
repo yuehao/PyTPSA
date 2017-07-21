@@ -1,7 +1,7 @@
 %module tpsalib
 %{
   #define SWIG_FILE_WITH_INIT
-  #include "tpsalib.h"
+  #include "../src/tpsalib.h"
   #include <sstream>
   #include <string>
   #include <complex>
@@ -18,7 +18,7 @@
 
 
 
-%include "tpsalib.h"
+%include "../src/tpsalib.h"
 
 
 %extend CTPS{

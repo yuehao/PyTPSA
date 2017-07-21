@@ -1,50 +1,41 @@
-from .lib import tpsalib as tlib
+from .cython import tpsalib as tlib
+import cmath
 import copy
 
 class tpsa(object):
     dimension = 0
     max_order = 0
     initialized = False
-    def __init__(self, value=0.0, variable=0, dtype=float, copy_tps=None):
+    def __init__(self, value=0.0, variable=0, dtype=float, tps=None):
+        if tps is not None:
+            if dtype in (float, complex):
+                self.dtype=dtype
+            else:
+                raise ValueError("Unknown type")
+            self._tps=tps;
+            return
         if tpsa.initialized == False:
             print('TPSA class has to be initialized')
             exit(-1)
 
-        if copy_tps is not None:
-            self._tps=copy_tps
-            return;
-
         if dtype == float:
-            self._tps = tlib.DCTPS(value)
-
-            if variable > 0:
-                if variable <= tpsa.dimension:
-                    self._tps.assign(value, variable)
-                else:
-                    raise Exception('Dimension out of range')
-
-
+            self._tps = tlib.PyDTPSA(float(value), variable)
+            self.dtype=float
 
         elif dtype == complex:
-            self._tps = tlib.CCTPS(value)
-
-            if variable > 0:
-                if variable <= tpsa.dimension:
-                    self._tps.assign(value, variable)
-                else:
-                    raise Exception('Dimension out of range')
+            self._tps = tlib.PyCTPSA(complex(value), variable)
+            self.dtype = complex
 
         else:
-            print("Unknown type")
-            exit(-1)
+            raise ValueError("Unknown type")
 
     @classmethod
     def initialize(cls, dim, order):
         tpsa.dimension = dim
         tpsa.max_order = order
         tpsa.initialized = True
-        tlib.DCTPS.Initialize(dim, order)
-        tlib.CCTPS.Initialize(dim, order)
+        tlib.PyDTPSA.initialize(dim, order)
+        tlib.PyCTPSA.initialize(dim, order)
 
     def cst(self):
         return self._tps.cst()
@@ -62,79 +53,178 @@ class tpsa(object):
         return self._tps.get_degree()
 
     def get_terms(self):
-        return self._tps.get_terms()
+        return self._tps.get_term()
 
-    def element(self, index):
-        return self._tps.element(index)
+    def element(self, *l):
+        return self._tps.element(*l)
 
-    def evaluate(self, vectors):
-        return self._tps.evaluate(vectors)
+
 
     def derivative(self, dim, order=1):
-        return tpsa(copy_tps=self._tps.derivative(dim, order))
+        result=tpsa(0.0, dtype=self.dtype)
+        result._tps=self._tps.derivative(dim, order)
+        return result
+
+    def __iadd__(self, other):
+        if isinstance(other, tpsa):
+            self._tps+=other._tps
+        else:
+            self+=other
+        return self
+
+    def __isub__(self, other):
+        if isinstance(other, tpsa):
+            self._tps -= other._tps
+        else:
+            self -= other
+        return self
+
+    def __imul__(self, other):
+        if isinstance(other, tpsa):
+            self._tps*=other._tps
+        else:
+            self*=other
+        return self
+
+    def __idiv__(self, other):
+        if isinstance(other, tpsa):
+            self._tps /= other._tps
+        else:
+            self /= other
+        return self
 
     def __add__(self, other):
-        return tpsa(copy_tps=(self._tps + other))
+        result = tpsa(0.0, dtype=self.dtype)
+        if isinstance(other, tpsa):
+            result._tps = self._tps + other._tps
+        else:
+            result._tps = self._tps + other
+        return result
 
     def __radd__(self, other):
-        return tpsa(copy_tps=(self._tps + other))
+        result = tpsa(0.0, dtype=self.dtype)
+        result._tps = self._tps + other
+        return result
 
     def __sub__(self, other):
-        return tpsa(copy_tps=(self._tps - other))
+        result = tpsa(0.0, dtype=self.dtype)
+        if isinstance(other, tpsa):
+            result._tps = self._tps - other._tps
+        else:
+            result._tps = self._tps - other
+        return result
 
     def __rsub__(self, other):
-        return tpsa(copy_tps=(other - self._tps))
+        result = tpsa(0.0, dtype=self.dtype)
+        result._tps = other - self._tps
+        return result
 
     def __mul__(self, other):
-        return tpsa(copy_tps=(self._tps * other))
+        result = tpsa(0.0, dtype=self.dtype)
+        if isinstance(other, tpsa):
+            result._tps = self._tps * other._tps
+        else:
+            result._tps = self._tps * other
+        return result
 
     def __rmul__(self, other):
-        return tpsa(copy_tps=(self._tps * other))
+        result = tpsa(0.0, dtype=self.dtype)
+        result._tps = self._tps * other
+        return result
 
     def __div__(self, other):
-        return tpsa(copy_tps=(self._tps / other))
+        result = tpsa(0.0, dtype=self.dtype)
+        if isinstance(other, tpsa):
+            result._tps = self._tps / other._tps
+        else:
+            result._tps = self._tps / other
+        return result
 
     def __rdiv__(self, other):
-        return tpsa(copy_tps=(other / self._tps))
+        result = tpsa(0.0, dtype=self.dtype)
+        result._tps = other / self._tps
+        return result
+
+    def __truediv__(self, other):
+        result = tpsa(0.0, dtype=self.dtype)
+        if isinstance(other, tpsa):
+            result._tps = self._tps / other._tps
+        else:
+            result._tps = self._tps / other
+        return result
+
+    def __rtruediv__(self, other):
+        result = tpsa(0.0, dtype=self.dtype)
+        result._tps = other / self._tps
+        return result
 
     def __neg__(self):
-        return tpsa(copy_tps=self._tps.__neg__())
+        return self * (-1.0)
 
     def __pos__(self):
-        return tpsa(copy_tps=self._tps.__pos__())
+        return self
 
     def __repr__(self):
         return self._tps.__repr__()
 
 def inv(a):
-    return tpsa(copy_tps=tlib.inv(a._tps))
+    if isinstance(a, tpsa):
+        return tpsa(tps=tlib.inv(a._tps), dtype=a.dtype)
+    else:
+        return 1.0/a
 
 def exp(a):
-    return tpsa(copy_tps=tlib.exp(a._tps))
+    if isinstance(a, tpsa):
+        return tpsa(tps=tlib.exp(a._tps), dtype=a.dtype)
+    else:
+        return cmath.exp(a)
 
 def log(a):
-    return tpsa(copy_tps=tlib.log(a._tps))
+    if isinstance(a, tpsa):
+        return tpsa(tps=tlib.log(a._tps), dtype=a.dtype)
+    else:
+        return cmath.log(a)
 
 def sqrt(a):
-    return tpsa(copy_tps=tlib.sqrt(a._tps))
+    if isinstance(a, tpsa):
+        return tpsa(tps=tlib.sqrt(a._tps), dtype=a.dtype)
+    else:
+        return cmath.sqrt(a)
 
-def pow(a):
-    return tpsa(copy_tps=tlib.pow(a._tps))
+def pow(a, ind):
+    if isinstance(a, tpsa):
+        return tpsa(tps=tlib.pow(a._tps, ind), dtype=a.dtype)
+    else:
+        return None
 
 def sin(a):
-    return tpsa(copy_tps=tlib.sin(a._tps))
+    if isinstance(a, tpsa):
+        return tpsa(tps=tlib.sin(a._tps), dtype=a.dtype)
+    else:
+        return cmath.sin(a)
 
 def cos(a):
-    return tpsa(copy_tps=tlib.cos(a._tps))
+    if isinstance(a, tpsa):
+        return tpsa(tps=tlib.cos(a._tps), dtype=a.dtype)
+    else:
+        return cmath.cos(a)
 
 def tan(a):
-    return tpsa(copy_tps=tlib.tan(a._tps))
+    if isinstance(a, tpsa):
+        return tpsa(tps=tlib.tan(a._tps), dtype=a.dtype)
+    else:
+        return cmath.tan(a)
 
 def sinh(a):
-    return tpsa(copy_tps=tlib.sinh(a._tps))
-
+    if isinstance(a, tpsa):
+        return tpsa(tps=tlib.sinh(a._tps), dtype=a.dtype)
+    else:
+        return cmath.sinh(a)
 def cosh(a):
-    return tpsa(copy_tps=tlib.cosh(a._tps))
+    if isinstance(a, tpsa):
+        return tpsa(tps=tlib.cosh(a._tps), dtype=a.dtype)
+    else:
+        return cmath.cosh(a)
 
 
 

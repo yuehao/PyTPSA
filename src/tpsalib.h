@@ -13,6 +13,9 @@
 #include <complex>
 #include <vector>
 #include <iostream>
+#include <sstream>
+#include <string>
+#include <set>
 #include "polymap.h"
 #include "mathfunc.h"
 #include "rational.h"
@@ -27,7 +30,7 @@ private:
     int degree;
     unsigned long terms;//Total terms
     std::vector<T> map;
-    
+    std::set<unsigned long> index;
     void redegree(const int &);
 
 public:
@@ -40,10 +43,18 @@ public:
         CTPS<T>::Maximum_TPS_Degree = max_order;
         polymap = CPolyMap(dim, max_order);
     }
+    static int Get_Max_Degree(){
+        return Maximum_TPS_Degree;
+    }
+    static int Get_TPS_Dim(){
+        return TPS_Dim;
+    }
     
     CTPS();
     
-    CTPS(const T &a);
+    CTPS(const T &a);  //Constant
+    
+    CTPS(const T &a, const int &);  //Variable
     
     CTPS(const CTPS<T> &);
     
@@ -79,13 +90,13 @@ public:
     
     CTPS<T> &operator/=(const CTPS<T> &);
     
-    CTPS<T> &add_to(const CTPS<T> &M) { return (*this) += M; }
+    CTPS<T> &add_to(const CTPS<T> &M) {(*this) += M; return *this;}
     
-    CTPS<T> &minus_to(const CTPS<T> &M) { return (*this) -= M; }
+    CTPS<T> &sub_to(const CTPS<T> &M) { (*this) -= M; return *this;}
     
-    CTPS<T> &time_to(const CTPS<T> &M) { return (*this) *= M; }
+    CTPS<T> &mul_to(const CTPS<T> &M) { (*this) *= M; return *this;}
     
-    CTPS<T> &divide_to(const CTPS<T> &M) { return (*this) /= M; }
+    CTPS<T> &div_to(const CTPS<T> &M) { (*this) /= M; return *this;}
     
     T evaluate(const std::vector<T> &value) const;
     
@@ -284,24 +295,26 @@ public:
     friend std::ostream& operator<<(std::ostream& output, const CTPS& A){A.print_by_order(output); return output;}
     inline friend const bool operator==(const CTPS & M, const CTPS & N){return M.map==N.map;}
     inline friend const bool operator!=(const CTPS & M, const CTPS & N){return M.map!=N.map;}
+
+    std::string print_to_string() const {std::ostringstream ost; this->print_by_order(ost); return ost.str();}
     
 };
 
 
 using dctps=CTPS<double>;
 using cctps=CTPS<std::complex<double> >;
-//using rctps=CTPS<rational<int> >;
-//using lrctps=CTPS<rational<long> >;
+using rctps=CTPS<rational<int> >;
+using lrctps=CTPS<rational<long> >;
 
 
 template<class T>
-int CTPS<T>::Maximum_TPS_Degree=2;
+int CTPS<T>::Maximum_TPS_Degree=-1;
 template<class T>
-int CTPS<T>::TPS_Dim=1;
+int CTPS<T>::TPS_Dim=-1;
 template<class T>
 CPolyMap CTPS<T>::polymap=CPolyMap(1,1);
     
-    
+typedef std::complex<double> cplx;
     
     
     
