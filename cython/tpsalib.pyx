@@ -69,13 +69,12 @@ cdef class PyDTPSA:
     def element(self, *l):
         cdef vector[int] indtuple
         cdef int ind
-        if len(*list)==1:
+        if len(l)==1:
             ind=l[0]
             return self.tps.element(ind)
         else:
-            ind=l
+            indtuple=l
             return self.tps.element(indtuple)
-
 
 
     def cst(self):
@@ -179,8 +178,7 @@ cdef class PyDTPSA:
             lhs.__idiv__(b)
         elif isinstance(b, PyDTPSA):
             lhs=PyDTPSA(a)
-
-            lhs.__imul__(a)
+            lhs.__idiv__(b)
         return lhs
 
     def __repr__(self):
@@ -245,11 +243,11 @@ cdef class PyCTPSA:
     def element(self, *l):
         cdef vector[int] indtuple
         cdef int ind
-        if len(*list)==1:
+        if len(l)==1:
             ind=l[0]
             return self.tps.element(ind)
         else:
-            ind=l
+            indtuple=l
             return self.tps.element(indtuple)
 
     def cst(self):
@@ -262,8 +260,8 @@ cdef class PyCTPSA:
         cdef PyCTPSA rhs
         if isinstance(a, PyCTPSA):
             rhs=<PyCTPSA>a
-        elif isinstance(a, (float,int)):
-            rhs=PyCTPSA(float(a))
+        elif isinstance(a, (float,int, complex)):
+            rhs=PyCTPSA(complex(a))
         self.tps.add_to(rhs.tps)
         return self
 
@@ -271,8 +269,8 @@ cdef class PyCTPSA:
         cdef PyCTPSA rhs
         if isinstance(a, PyCTPSA):
             rhs=<PyCTPSA>a
-        elif isinstance(a, (float,int)):
-            rhs=PyCTPSA(float(a))
+        elif isinstance(a, (float,int, complex)):
+            rhs=PyCTPSA(complex(a))
         self.tps.sub_to(rhs.tps)
         return self
 
@@ -280,8 +278,8 @@ cdef class PyCTPSA:
         cdef PyCTPSA rhs
         if isinstance(a, PyCTPSA):
             rhs=<PyCTPSA>a
-        elif isinstance(a, (float,int)):
-            rhs=PyCTPSA(float(a))
+        elif isinstance(a, (float,int, complex)):
+            rhs=PyCTPSA(complex(a))
         self.tps.mul_to(rhs.tps)
         return self
 
@@ -289,8 +287,8 @@ cdef class PyCTPSA:
         cdef PyCTPSA rhs
         if isinstance(a, PyCTPSA):
             rhs=<PyCTPSA>a
-        elif isinstance(a, (float,int)):
-            rhs=PyCTPSA(float(a))
+        elif isinstance(a, (float,int, complex)):
+            rhs=PyCTPSA(complex(a))
         self.tps.div_to(rhs.tps)
         return self
 
@@ -298,8 +296,8 @@ cdef class PyCTPSA:
         cdef PyCTPSA rhs
         if isinstance(a, PyCTPSA):
             rhs=<PyCTPSA>a
-        elif isinstance(a, (float,int)):
-            rhs=PyCTPSA(float(a))
+        elif isinstance(a, (float,int, complex)):
+            rhs=PyCTPSA(complex(a))
         self.tps.div_to(rhs.tps)
         return self
 
@@ -342,10 +340,10 @@ cdef class PyCTPSA:
         cdef PyCTPSA lhs
         if isinstance(a, PyCTPSA):
             lhs=PyCTPSA(copy_tpsa=<PyCTPSA> a)
-            lhs.__idiv__(b)
+            lhs.__itruediv__(b)
         elif isinstance(b, PyCTPSA):
-            lhs=PyCTPSA(copy_tpsa=<PyCTPSA> b)
-            lhs.__imul__(a)
+            lhs=PyCTPSA(a)
+            lhs.__itruediv__(b)
         return lhs
 
     def __div__(a,b):
@@ -354,8 +352,8 @@ cdef class PyCTPSA:
             lhs=PyCTPSA(copy_tpsa=<PyCTPSA> a)
             lhs.__idiv__(b)
         elif isinstance(b, PyCTPSA):
-            lhs=PyCTPSA(copy_tpsa=<PyCTPSA> b)
-            lhs.__imul__(a)
+            lhs=PyCTPSA(a)
+            lhs.__idiv__(b)
         return lhs
 
     def __repr__(self):

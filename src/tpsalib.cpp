@@ -73,6 +73,17 @@ CTPS<T>::CTPS(const CTPS<T> &M){
 template<class T>
 unsigned long CTPS<T>::findindex(const std::vector<int>& indexmap) const{
     int dim=TPS_Dim;
+    if (indexmap.size()==dim){
+        std::vector<int> newindexmap((unsigned long)dim+1);
+        int sum=0;
+        for (int i=1;i<=dim;i++){
+            sum+=indexmap[i-1];
+            newindexmap[i]=indexmap[i-1];
+        }
+        newindexmap[0]=sum;
+        return this->findindex(newindexmap);
+
+    }
     if (indexmap.size()!= (dim+1)) throw std::runtime_error(std::string("Index map does not have correction length"));
     std::vector<int> sum((unsigned long)dim+1);
     sum[0]=indexmap[0];
@@ -93,7 +104,9 @@ unsigned long CTPS<T>::findindex(const std::vector<int>& indexmap) const{
 
 template<class T>
 std::vector<int> CTPS<T>::findpower(const unsigned long &n) const {
-    return this->polymap.getindexmap(n);
+    if (n < this->terms)  return this->polymap.getindexmap(n);
+    else
+        throw std::out_of_range("The index is out of range");
 }
 
 template<class T>
@@ -135,7 +148,8 @@ void CTPS<T>::assign(const T& a){
 template<class T>
 const T CTPS<T>::element(const unsigned long & ind) const{
     if (ind<0 || ind >=terms) {
-        throw std::runtime_error(std::string("Element index out of range in CTPS"));
+        //throw std::runtime_error(std::string("Element index out of range in CTPS"));
+        throw std::out_of_range(std::string("Element index out of range in CTPS"));
     }
     return map[ind];
 }
@@ -145,6 +159,8 @@ const T CTPS<T>::element(const std::vector<int>& ind) const{
     unsigned long result=this->findindex(ind);
     return map[result];
 }
+
+
 
 template <class T>
 T CTPS<T>::evaluate(const std::vector<T>& inivalue) const{
@@ -292,6 +308,7 @@ CTPS<T>& CTPS<T>::operator*=(const CTPS<T>& M){
         //#pragma omp parallel for schedule(dynamic)
         //for (int j=0; j<msize();j++) {
         unsigned long j_max=std::min(M.map.size(),binomial(this->TPS_Dim+this->Maximum_TPS_Degree-vthis[0],this->TPS_Dim));
+        //#pragma omp parallel for schedule(dynamic)
         for (int j=0; j< j_max;j++) {
             if (std::abs(M.map[j])==0) {
                 continue;

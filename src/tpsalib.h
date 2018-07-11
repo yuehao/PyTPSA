@@ -1,9 +1,7 @@
 /*
- *  ctpsa.h
- *  ERLtrac
+ *  tpsalib.h
  *
  *  Created by Yue Hao on 4/8/11.
- *  Copyright 2011 Brookhaven National Laboratory. All rights reserved.
  *
  */
 
@@ -150,7 +148,7 @@ public:
     }
     
     friend CTPS sqrt(const CTPS & M) {
-        CTPS<T> temp(M), sum, term_by_order;
+        CTPS temp(M), sum, term_by_order;
         T a0=sqrt(M.cst());
         //T value=sqrt(a0);
         temp = temp - M.cst();
@@ -305,6 +303,7 @@ using dctps=CTPS<double>;
 using cctps=CTPS<std::complex<double> >;
 using rctps=CTPS<rational<int> >;
 using lrctps=CTPS<rational<long> >;
+using dtpsctps=CTPS<CTPS<double> >;
 
 
 template<class T>
@@ -315,7 +314,7 @@ template<class T>
 CPolyMap CTPS<T>::polymap=CPolyMap(1,1);
     
 typedef std::complex<double> cplx;
-    
+
     
     
     /*template<class T>

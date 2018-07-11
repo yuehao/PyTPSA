@@ -40,6 +40,22 @@ class tpsa(object):
     def cst(self):
         return self._tps.cst()
 
+    @property
+    def indices(self):
+        power_list=[]
+        value_list=[]
+        for i in range(self.get_terms()):
+            power = self.findpower(i)
+            value = self.element(power)
+            if value==0 and i>0:
+                continue
+
+            power_list.append(power[1:])
+            value_list.append(value)
+        return power_list, value_list
+
+
+
     def findindex(self, power_list):
         return self._tps.findindex(power_list)
 
@@ -55,8 +71,11 @@ class tpsa(object):
     def get_terms(self):
         return self._tps.get_term()
 
-    def element(self, *l):
-        return self._tps.element(*l)
+    def element(self, l):
+        if isinstance(l,int):
+            return self._tps.element(l)
+        elif isinstance(l, list):
+            return self._tps.element(*l)
 
 
 
@@ -69,28 +88,28 @@ class tpsa(object):
         if isinstance(other, tpsa):
             self._tps+=other._tps
         else:
-            self+=other
+            self = self + other
         return self
 
     def __isub__(self, other):
         if isinstance(other, tpsa):
             self._tps -= other._tps
         else:
-            self -= other
+            self = self - other
         return self
 
     def __imul__(self, other):
         if isinstance(other, tpsa):
             self._tps*=other._tps
         else:
-            self*=other
+            self = self * other
         return self
 
     def __idiv__(self, other):
         if isinstance(other, tpsa):
             self._tps /= other._tps
         else:
-            self /= other
+            self = self / other
         return self
 
     def __add__(self, other):
@@ -225,6 +244,10 @@ def cosh(a):
         return tpsa(tps=tlib.cosh(a._tps), dtype=a.dtype)
     else:
         return cmath.cosh(a)
+
+def initialize(dim,order):
+    tpsa.initialize(dim,order)
+
 
 
 
