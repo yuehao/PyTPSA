@@ -11,15 +11,14 @@ cimport tpsa_def
 ctypedef double complex cplx
 
 
+
 cdef class PyDTPSA:
     cdef tpsa_def.CTPS[double] tps
 
     def __cinit__(self, value=0.0, int dim_ind=0, PyDTPSA copy_tpsa=None):
-
         if copy_tpsa:
             self.tps=copy_tpsa.tps
             return
-
 
         if tpsa_def.CTPS[double].Get_Max_Degree()<0:
             print("The class is not initialized yet.")
@@ -33,7 +32,6 @@ cdef class PyDTPSA:
                     raise IndexError ("TPSA dimension is out of range.")
             else:
                 self.tps.assign(float(value))
-
 
 
     @classmethod
@@ -358,6 +356,9 @@ cdef class PyCTPSA:
 
     def __repr__(self):
         return self.tps.print_to_string().decode("utf-8")
+
+
+
 
 
 

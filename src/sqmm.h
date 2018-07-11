@@ -10,4 +10,5 @@ class Csqmm{
 
 };
 
+#include "sqmm.cpp"
 #endif //PYTPSA_SQMM_H

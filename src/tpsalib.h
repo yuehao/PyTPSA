@@ -22,13 +22,13 @@ const int MAX_TPS_ORDERS=6;
 
 
 
-template<class T> // T is the datatype for the matrix, U is the data type for the vector
+template<class T> // T is the datatype for the matrix
 class CTPS {
 private:
     int degree;
     unsigned long terms;//Total terms
     std::vector<T> map;
-    std::set<unsigned long> index;
+    std::set<unsigned long> indices;
     void redegree(const int &);
 
 public:
@@ -101,6 +101,18 @@ public:
     CTPS<T> derivative(const int &ndim, const int &order = 1) const;
     
     inline const T cst() const { return map[0]; }
+
+    template<class U> CTPS<U> convert_to() const{
+        CTPS<U> temp;
+        temp.degree=this->degree;
+        temp.indices=this->indices;
+        temp.terms=this->terms;
+        temp.map.resize(temp.terms);
+        for (int i=0;i<this->term; i++){
+            temp.map[i]=U(this->map[i]);
+        }
+    }
+
     
     
     friend CTPS inv(const CTPS & M) {
@@ -303,7 +315,7 @@ using dctps=CTPS<double>;
 using cctps=CTPS<std::complex<double> >;
 using rctps=CTPS<rational<int> >;
 using lrctps=CTPS<rational<long> >;
-using dtpsctps=CTPS<CTPS<double> >;
+
 
 
 template<class T>
