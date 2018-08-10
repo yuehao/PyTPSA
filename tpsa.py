@@ -40,12 +40,12 @@ class tpsa(object):
     def cst(self):
         return self._tps.cst()
 
-    @property
+    '''@property
     def indices(self):
         power_list=[]
         value_list=[]
         for i in range(self.get_terms()):
-            power = self.findpower(i)
+            power = self.find_power(i)
             value = self.element(power)
             if value==0 and i>0:
                 continue
@@ -53,14 +53,16 @@ class tpsa(object):
             power_list.append(power[1:])
             value_list.append(value)
         return power_list, value_list
+'''
+    @property
+    def indices(self):
+        return self._tps.indices()
 
+    def find_index(self, power_list):
+        return self._tps.find_index(power_list)
 
-
-    def findindex(self, power_list):
-        return self._tps.findindex(power_list)
-
-    def findpower(self, index):
-        return self._tps.findpower(index)
+    def find_power(self, index):
+        return self._tps.find_power(index)
 
     def get_dim(self):
         return self._tps.get_dim()

@@ -46,13 +46,18 @@ cdef class PyDTPSA:
     def get_term(self):
         return self.tps.get_terms()
 
-    def findindex(self, vector[int] power_ind):
+    def indices(self):
+        cdef vector[double] tpsmap=self.tps.get_map()
+        return tpsmap
+
+
+    def find_index(self, vector[int] power_ind):
         cdef unsigned long temp
-        temp=self.tps.findindex(power_ind)
+        temp=self.tps.find_index(power_ind)
         return temp
 
-    def findpower(self, unsigned long n):
-        cdef vector[int] temp = self.tps.findpower(n)
+    def find_power(self, unsigned long n):
+        cdef vector[int] temp = self.tps.find_power(n)
         return temp
 
     #def evaluate(self, vector[double] x):
@@ -220,13 +225,18 @@ cdef class PyCTPSA:
     def get_term(self):
         return self.tps.get_terms()
 
-    def findindex(self, vector[int] power_ind):
+
+    def indices(self):
+        cdef vector[cplx] tpsmap=self.tps.get_map()
+        return tpsmap
+
+    def find_index(self, vector[int] power_ind):
         cdef unsigned long temp
-        temp=self.tps.findindex(power_ind)
+        temp=self.tps.find_index(power_ind)
         return temp
 
-    def findpower(self, unsigned long n):
-        cdef vector[int] temp = self.tps.findpower(n)
+    def find_power(self, unsigned long n):
+        cdef vector[int] temp = self.tps.find_power(n)
         return temp
 
     #def evaluate(self, vector[double] x):

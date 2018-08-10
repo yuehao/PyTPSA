@@ -12,6 +12,7 @@ cdef extern from "../src/tpsalib.h":
         CTPS(const CTPS[T]&) except +
 
 
+
         @staticmethod
         void Initialize(const int&, const int&)
 
@@ -21,8 +22,10 @@ cdef extern from "../src/tpsalib.h":
         @staticmethod
         int Get_TPS_Dim()
 
-        unsigned long findindex(const vector[int]& ) const
-        vector[int] findpower(const unsigned long & n) const
+        vector[T] get_map() const
+
+        unsigned long find_index(const vector[int]& ) const
+        vector[int] find_power(const unsigned long & n) const
 
         const int get_dim() const
         const unsigned long get_degree() const

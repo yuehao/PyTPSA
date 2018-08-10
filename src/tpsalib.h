@@ -34,11 +34,13 @@ private:
 public:
     static int Maximum_TPS_Degree;
     static int TPS_Dim;
+    static int Maximum_Terms;
     static CPolyMap polymap;
     
     static void Initialize(const int &dim, const int &max_order = MAX_TPS_ORDERS) {
         CTPS<T>::TPS_Dim = dim;
         CTPS<T>::Maximum_TPS_Degree = max_order;
+        CTPS<T>::Maximum_Terms = binomial(dim+max_order, dim);
         polymap = CPolyMap(dim, max_order);
     }
     static int Get_Max_Degree(){
@@ -46,6 +48,9 @@ public:
     }
     static int Get_TPS_Dim(){
         return TPS_Dim;
+    }
+    static int Get_Max_Terms(){
+        return Maximum_Terms;
     }
     
     CTPS();
@@ -61,9 +66,9 @@ public:
     void assign(const T &); //A constant
     void assign(const T &, const int &);// A Variable
     
-    unsigned long findindex(const std::vector<int> &) const;
+    unsigned long find_index(const std::vector<int> &) const;
     
-    std::vector<int> findpower(const unsigned long &n) const;
+    std::vector<int> find_power(const unsigned long &n) const;
     
     inline const int get_dim() const { return TPS_Dim; }
     
@@ -74,6 +79,8 @@ public:
     const T element(const unsigned long &ind) const;
     
     const T element(const std::vector<int> &indmap) const;
+
+    const std::vector<T> get_map() const {return this->map;}
     
     std::ostream&  print_by_order(std::ostream& output) const;
     
@@ -108,7 +115,7 @@ public:
         temp.indices=this->indices;
         temp.terms=this->terms;
         temp.map.resize(temp.terms);
-        for (int i=0;i<this->term; i++){
+        for (int i=0;i<this->terms; i++){
             temp.map[i]=U(this->map[i]);
         }
     }
@@ -184,6 +191,17 @@ public:
         }
         CTPS temp(M), sum, term_by_order;
         double index = b;
+
+        if (M.cst() == T(0.0)){
+            if (std::fmod(b, 1.0) == 0.0 && b > 1){
+                sum = M;
+                for (int i=1; i < b; i++ ) sum = sum * M;
+                return sum;
+            }
+            else{
+                std::runtime_error("Divide by zero, in CTPS::pow");
+            }
+        }
     
         temp = temp - M.cst();
         term_by_order += T(1);
@@ -320,6 +338,8 @@ using lrctps=CTPS<rational<long> >;
 
 template<class T>
 int CTPS<T>::Maximum_TPS_Degree=-1;
+template<class T>
+int CTPS<T>::Maximum_Terms=-1;
 template<class T>
 int CTPS<T>::TPS_Dim=-1;
 template<class T>

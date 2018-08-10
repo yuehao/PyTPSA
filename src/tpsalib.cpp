@@ -71,7 +71,7 @@ CTPS<T>::CTPS(const CTPS<T> &M){
 }
 
 template<class T>
-unsigned long CTPS<T>::findindex(const std::vector<int>& indexmap) const{
+unsigned long CTPS<T>::find_index(const std::vector<int>& indexmap) const{
     int dim=TPS_Dim;
     if (indexmap.size()==dim){
         std::vector<int> newindexmap((unsigned long)dim+1);
@@ -81,7 +81,7 @@ unsigned long CTPS<T>::findindex(const std::vector<int>& indexmap) const{
             newindexmap[i]=indexmap[i-1];
         }
         newindexmap[0]=sum;
-        return this->findindex(newindexmap);
+        return this->find_index(newindexmap);
 
     }
     if (indexmap.size()!= (dim+1)) throw std::runtime_error(std::string("Index map does not have correction length"));
@@ -103,8 +103,8 @@ unsigned long CTPS<T>::findindex(const std::vector<int>& indexmap) const{
 }
 
 template<class T>
-std::vector<int> CTPS<T>::findpower(const unsigned long &n) const {
-    if (n < this->terms)  return this->polymap.getindexmap(n);
+std::vector<int> CTPS<T>::find_power(const unsigned long &n) const {
+    if (n < this->Maximum_Terms)  return this->polymap.getindexmap(n);
     else
         throw std::out_of_range("The index is out of range");
 }
@@ -156,7 +156,7 @@ const T CTPS<T>::element(const unsigned long & ind) const{
 
 template<class T>
 const T CTPS<T>::element(const std::vector<int>& ind) const{
-    unsigned long result=this->findindex(ind);
+    unsigned long result=this->find_index(ind);
     return map[result];
 }
 
@@ -192,7 +192,7 @@ CTPS<T> CTPS<T>::derivative(const int& ndim, const int &order) const {
                 indexlist[ndim]-=order;
                 indexlist[0]-=order;
                 if (new_max_order<indexlist[0]) new_max_order=indexlist[0];
-                unsigned long new_i=findindex(indexlist);
+                unsigned long new_i=find_index(indexlist);
                 temp.map[new_i]=this->map[i]*double(binomial(thisdim, order));
             }
         }
@@ -319,7 +319,7 @@ CTPS<T>& CTPS<T>::operator*=(const CTPS<T>& M){
             for (int k=0; k<vthis.size(); k++) {
                 indexmap[k] = vthis[k] + vm[k];
             }
-            unsigned long target_ind=this->findindex(indexmap);
+            unsigned long target_ind=this->find_index(indexmap);
             //#pragma omp atomic
             this->map[target_ind]+=temp.map[i]*M.map[j];
         }
