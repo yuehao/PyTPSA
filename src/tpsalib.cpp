@@ -179,9 +179,47 @@ T CTPS<T>::evaluate(const std::vector<T>& inivalue) const{
     }
     return sum;
 }
+
+template<class T>
+bool CTPS<T>::is_zero() const{
+
+    for (unsigned long i = 0; i < this->get_terms(); i++)
+        if (std::abs(this->map[i]) > inf_epsilon) return false;
+    return true;
+
+}
+
+template<class T>
+bool CTPS<T>::is_equal(const CTPS<T> &M) const {
+    unsigned long this_terms = this->get_terms();
+    unsigned long m_terms = M.get_terms();
+    unsigned long terms = this_terms;
+
+    if (this_terms > m_terms) terms = m_terms;
+    for (unsigned long i = 0; i < terms; i++) {
+        if (std::abs(this->map[i] - M.map[i]) < inf_epsilon ||
+            std::abs(this->map[i] - M.map[i]) < inf_epsilon * std::abs(this->map[i])) {}
+        else { return false; }
+    }
+
+    if (this_terms > m_terms) {
+        for (unsigned long i = terms; i < this_terms; i++) {
+            if (std::abs(this->map[i]) > inf_epsilon) return false;
+        }
+    }
+    if (this_terms < m_terms) {
+        for (unsigned long i = terms; i < m_terms; i++) {
+            if (std::abs(M.map[i]) > inf_epsilon) return false;
+        }
+    }
+
+
+}
+
 template <class T>
 CTPS<T> CTPS<T>::derivative(const int& ndim, const int &order) const {
     if (order<=0) return CTPS(*this);
+    if (this->get_degree()<order) return CTPS(T(0.0));
     if (ndim<=this->TPS_Dim && ndim>0) {
         CTPS<T> temp((*this)*T(0.0));
         int new_max_order=0;
@@ -191,16 +229,40 @@ CTPS<T> CTPS<T>::derivative(const int& ndim, const int &order) const {
                 int thisdim=indexlist[ndim];
                 indexlist[ndim]-=order;
                 indexlist[0]-=order;
-                if (new_max_order<indexlist[0]) new_max_order=indexlist[0];
+                //if (new_max_order<indexlist[0]) new_max_order=indexlist[0];
                 unsigned long new_i=find_index(indexlist);
                 temp.map[new_i]=this->map[i]*double(binomial(thisdim, order));
             }
         }
-        temp.redegree(new_max_order);
+        temp.redegree(this->get_degree()-order);
         return temp;
         
     }
     else throw std::runtime_error(std::string("Inconsistent dimension to take derivative"));
+    return CTPS();
+}
+
+template <class T>
+CTPS<T> CTPS<T>::integrate(const int& ndim, const T &a0) const {
+    if (ndim<=this->TPS_Dim && ndim>0) {
+        CTPS<T> temp((*this)*T(a0));
+        int new_max_order=this->get_degree()+1;
+        temp.redegree(new_max_order);
+        for (int i=0;i<terms;i++){
+            std::vector<int> indexlist=this->polymap.getindexmap(i);
+            if (indexlist[ndim]<new_max_order){
+                int thisdim=indexlist[ndim];
+                indexlist[ndim]+=1;
+                indexlist[0]+=1;
+                unsigned long new_i=find_index(indexlist);
+                temp.map[new_i]=this->map[i]/(thisdim+1.0);
+            }
+        }
+
+        return temp;
+
+    }
+    else throw std::runtime_error(std::string("Inconsistent dimension to take integration"));
     return CTPS();
 }
 

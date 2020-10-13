@@ -6,9 +6,9 @@
 #define PYTPSA_SQMM_H
 
 template<class T>
-class Csqmm{
+class Cnlmap{
 
 };
 
-#include "sqmm.cpp"
+#include "nlmap.cpp"
 #endif //PYTPSA_SQMM_H

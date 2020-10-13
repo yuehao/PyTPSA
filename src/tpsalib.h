@@ -19,6 +19,7 @@
 #include "rational.h"
 //using namespace std;
 const int MAX_TPS_ORDERS=6;
+const double inf_epsilon=1e-15;
 
 
 
@@ -41,7 +42,7 @@ public:
         CTPS<T>::TPS_Dim = dim;
         CTPS<T>::Maximum_TPS_Degree = max_order;
         CTPS<T>::Maximum_Terms = binomial(dim+max_order, dim);
-        polymap = CPolyMap(dim, max_order);
+        CTPS<T>::polymap = CPolyMap(dim, max_order);
     }
     static int Get_Max_Degree(){
         return Maximum_TPS_Degree;
@@ -51,6 +52,9 @@ public:
     }
     static int Get_Max_Terms(){
         return Maximum_Terms;
+    }
+    static std::vector<int> Get_Power_Index(const int & i){
+        return polymap.getindexmap(i);
     }
     
     CTPS();
@@ -102,10 +106,14 @@ public:
     CTPS<T> &mul_to(const CTPS<T> &M) { (*this) *= M; return *this;}
     
     CTPS<T> &div_to(const CTPS<T> &M) { (*this) /= M; return *this;}
+
+    bool is_zero() const;
+    bool is_equal(const CTPS<T> &M) const;
     
     T evaluate(const std::vector<T> &value) const;
     
     CTPS<T> derivative(const int &ndim, const int &order = 1) const;
+    CTPS<T> integrate(const int &ndim, const T& ) const;
     
     inline const T cst() const { return map[0]; }
 
@@ -236,7 +244,27 @@ public:
         sum += sin_a0;
         return sum;
     }
-    
+
+    friend CTPS arcsin(const CTPS & M) {
+        /*  Provided by Derong, using fix point trick in M.Berz's book
+            y0+y=arcsin(x0+x) sin(y0)=x0
+            sin(y0)cos(y)+cos(y0)sin(y)=x0+x
+            sin(y)=[x+x0*(1-cos(y))]/cos(y0)
+            y=y-sin(y)+[x+x0*(1-cos(y))]/cos(y0)
+        */
+        CTPS temp(M), result, temp1;
+        T a0 = M.cst(), arcsin_a0 = asin(a0), cos_y0=sqrt(T(1.0)-a0*a0);
+        temp = temp - a0;
+        temp1=temp;
+        for (int i=0;i<M.Get_Max_Degree()+1;i++){
+            temp1=temp1-sin(temp1)+(temp+a0*(T(1.0)-cos(temp1)))/cos_y0;
+        }
+        return temp1+arcsin_a0;
+
+
+    }
+
+
     friend CTPS cos(const CTPS & M) {
         CTPS temp(M), sum, term_by_order;
         T a0 = M.cst(), sin_a0 = sin(a0), cos_a0 = cos(a0);
@@ -255,9 +283,14 @@ public:
         sum += cos_a0;
         return sum;
     }
-    
+
+    friend CTPS arccos(const CTPS & M) {
+        return T(3.14159265358979323846/2.0)-arcsin(M);
+    }
+
     friend CTPS tan(const CTPS & M) {return sin(M)/cos(M);}
-    
+
+
     friend CTPS sinh(const CTPS & M) {
         CTPS temp(M), sum, term_by_order;
         T a0 = M.cst(), sinh_a0 = sinh(a0), cosh_a0 = cosh(a0);

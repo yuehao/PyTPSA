@@ -1,11 +1,11 @@
 from .cython import tpsalib as tlib
 import cmath
-import copy
 
 class tpsa(object):
     dimension = 0
     max_order = 0
     initialized = False
+    string_repr=None
     def __init__(self, value=0.0, variable=0, dtype=float, tps=None):
         if tps is not None:
             if dtype in (float, complex):
@@ -36,6 +36,25 @@ class tpsa(object):
         tpsa.initialized = True
         tlib.PyDTPSA.initialize(dim, order)
         tlib.PyCTPSA.initialize(dim, order)
+
+    @classmethod
+    def set_variable_name(cls, string_rep):
+        tpsa.string_repr = string_rep.split()
+        if len(tpsa.string_repr) < tpsa.dimension:
+            tpsa.string_repr = None
+            print("Invalid number of representing setting")
+
+    @classmethod
+    def get_power_index(cls, ind):
+        return tlib.PyDTPSA.get_power_index(ind)
+
+    @classmethod
+    def get_max_degree(cls):
+        return tlib.PyDTPSA.get_max_degree()
+
+    @classmethod
+    def get_max_terms(cls):
+        return tlib.PyDTPSA.get_max_terms()
 
     def cst(self):
         return self._tps.cst()
@@ -84,6 +103,10 @@ class tpsa(object):
     def derivative(self, dim, order=1):
         result=tpsa(0.0, dtype=self.dtype)
         result._tps=self._tps.derivative(dim, order)
+        return result
+    def integrate(self, dim, a0):
+        result=tpsa(0.0, dtype=self.dtype)
+        result._tps=self._tps.integrate(dim, a0)
         return result
 
     def __iadd__(self, other):
@@ -223,13 +246,22 @@ def sin(a):
         return tpsa(tps=tlib.sin(a._tps), dtype=a.dtype)
     else:
         return cmath.sin(a)
+def arcsin(a):
+    if isinstance(a, tpsa):
+        return tpsa(tps=tlib.arcsin(a._tps), dtype=a.dtype)
+    else:
+        return cmath.asin(a)
 
 def cos(a):
     if isinstance(a, tpsa):
         return tpsa(tps=tlib.cos(a._tps), dtype=a.dtype)
     else:
         return cmath.cos(a)
-
+def arccos(a):
+    if isinstance(a, tpsa):
+        return tpsa(tps=tlib.arccos(a._tps), dtype=a.dtype)
+    else:
+        return cmath.acos(a)
 def tan(a):
     if isinstance(a, tpsa):
         return tpsa(tps=tlib.tan(a._tps), dtype=a.dtype)
@@ -247,8 +279,13 @@ def cosh(a):
     else:
         return cmath.cosh(a)
 
-def initialize(dim,order):
+def initialize(dim, order, variable_name=None):
     tpsa.initialize(dim,order)
+    if variable_name is not None:
+        tpsa.set_variable_name(variable_name)
+
+def get_dimension():
+    return tpsa.dimension
 
 
 

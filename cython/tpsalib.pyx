@@ -38,6 +38,17 @@ cdef class PyDTPSA:
     def initialize(cls, int dim, int max_order):
         tpsa_def.CTPS[double].Initialize(dim, max_order)
 
+    @classmethod
+    def get_power_index(cls, int ind):
+        return tpsa_def.CTPS[double].Get_Power_Index(ind)
+
+    @classmethod
+    def get_max_degree(cls):
+        return tpsa_def.CTPS[double].Get_Max_Degree()
+
+    @classmethod
+    def get_max_terms(cls):
+        return tpsa_def.CTPS[double].Get_Max_Terms()
 
     def get_dim(self):
         return self.tps.get_dim()
@@ -67,6 +78,12 @@ cdef class PyDTPSA:
         cdef PyDTPSA result
         result=PyDTPSA(0.0)
         result.tps=self.tps.derivative(variable, order)
+        return result
+
+    def integrate(self, int variable, double a0):
+        cdef PyDTPSA result
+        result=PyDTPSA(0.0)
+        result.tps=self.tps.integrate(variable, a0)
         return result
 
     def element(self, *l):
@@ -217,6 +234,18 @@ cdef class PyCTPSA:
     def initialize(cls, int dim, int max_order):
         tpsa_def.CTPS[cplx].Initialize(dim, max_order)
 
+    @classmethod
+    def get_power_index(cls, int ind):
+        return tpsa_def.CTPS[double].Get_Power_Index(ind)
+
+    @classmethod
+    def get_max_degree(cls):
+        return tpsa_def.CTPS[double].Get_Max_Degree()
+
+    @classmethod
+    def get_max_terms(cls):
+        return tpsa_def.CTPS[double].Get_Max_Terms()
+
 
     def get_dim(self):
         return self.tps.get_dim()
@@ -246,6 +275,12 @@ cdef class PyCTPSA:
         cdef PyCTPSA result
         result=PyCTPSA(0.0)
         result.tps=self.tps.derivative(variable, order)
+        return result
+
+    def integrate(self, int variable, cplx a0):
+        cdef PyCTPSA result
+        result=PyCTPSA(0.0)
+        result.tps=self.tps.integrate(variable, a0)
         return result
 
     def element(self, *l):
@@ -454,6 +489,18 @@ def sin(a):
         resultc.tps=tpsa_def.sin((<PyCTPSA>a).tps)
         return resultc
 
+def arcsin(a):
+    cdef PyCTPSA resultc
+    cdef PyDTPSA resultd
+    if isinstance(a, PyDTPSA):
+        resultd=PyDTPSA(0.0)
+        resultd.tps=tpsa_def.arcsin((<PyDTPSA>a).tps)
+        return resultd
+    if isinstance(a, PyCTPSA):
+        resultc=PyCTPSA(0.0)
+        resultc.tps=tpsa_def.arcsin((<PyCTPSA>a).tps)
+        return resultc
+
 def cos(a):
     cdef PyCTPSA resultc
     cdef PyDTPSA resultd
@@ -464,6 +511,18 @@ def cos(a):
     if isinstance(a, PyCTPSA):
         resultc=PyCTPSA(0.0)
         resultc.tps=tpsa_def.cos((<PyCTPSA>a).tps)
+        return resultc
+
+def arccos(a):
+    cdef PyCTPSA resultc
+    cdef PyDTPSA resultd
+    if isinstance(a, PyDTPSA):
+        resultd=PyDTPSA(0.0)
+        resultd.tps=tpsa_def.arccos((<PyDTPSA>a).tps)
+        return resultd
+    if isinstance(a, PyCTPSA):
+        resultc=PyCTPSA(0.0)
+        resultc.tps=tpsa_def.arccos((<PyCTPSA>a).tps)
         return resultc
 
 def tan(a):

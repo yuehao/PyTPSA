@@ -22,6 +22,12 @@ cdef extern from "../src/tpsalib.h":
         @staticmethod
         int Get_TPS_Dim()
 
+        @staticmethod
+        int Get_Max_Terms()
+
+        @staticmethod
+        vector[int] Get_Power_Index(const int&)
+
         vector[T] get_map() const
 
         unsigned long find_index(const vector[int]& ) const
@@ -39,6 +45,7 @@ cdef extern from "../src/tpsalib.h":
 
         T evaluate(const vector[double] ) const
         CTPS[T] derivative(const int&, const int&) const
+        CTPS[T] integrate(const int&, const T&) const
 
         string print_to_string() const
 
@@ -68,8 +75,14 @@ cdef extern from "../src/tpsalib.h":
     CTPS[double] sin(const CTPS[double] &)
     CTPS[complex] sin(const CTPS[complex] &)
 
+    CTPS[double] arcsin(const CTPS[double] &)
+    CTPS[complex] arcsin(const CTPS[complex] &)
+
     CTPS[double] cos(const CTPS[double] &)
     CTPS[complex] cos(const CTPS[complex] &)
+
+    CTPS[double] arccos(const CTPS[double] &)
+    CTPS[complex] arccos(const CTPS[complex] &)
 
     CTPS[double] tan(const CTPS[double] &)
     CTPS[complex] tan(const CTPS[complex] &)
