@@ -10,7 +10,7 @@ cdef extern from "../src/tpsalib.h":
         CTPS() except +
         CTPS(const T&) except +
         CTPS(const CTPS[T]&) except +
-
+        CTPS(const vector[T]&) except +
 
 
         @staticmethod
@@ -29,6 +29,7 @@ cdef extern from "../src/tpsalib.h":
         vector[int] Get_Power_Index(const int&)
 
         vector[T] get_map() const
+        void set_map(const vector[T]&)
 
         unsigned long find_index(const vector[int]& ) const
         vector[int] find_power(const unsigned long & n) const
@@ -43,9 +44,12 @@ cdef extern from "../src/tpsalib.h":
         void assign(const T &, const int &)
         void assign(const T &)
 
-        T evaluate(const vector[double] ) const
+        T evaluate(const vector[T] ) const
+        CTPS[T] evaluate(const vector[CTPS[T]] ) const
+
         CTPS[T] derivative(const int&, const int&) const
         CTPS[T] integrate(const int&, const T&) const
+        CTPS[T] conjugate(const int&) const
 
         string print_to_string() const
 
@@ -55,6 +59,7 @@ cdef extern from "../src/tpsalib.h":
         CTPS[T]& div_to(const CTPS[T] &)
 
         const T cst() const
+        CTPS[T] linear() const
 
 cdef extern from "../src/tpsalib.h":
     CTPS[double] inv(const CTPS[double] &)

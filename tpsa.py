@@ -1,12 +1,15 @@
 from .cython import tpsalib as tlib
 import cmath
 
+
+
 class tpsa(object):
     dimension = 0
     max_order = 0
     initialized = False
-    string_repr=None
-    def __init__(self, value=0.0, variable=0, dtype=float, tps=None):
+    def_string_repr=None
+    def __init__(self, value=0.0, variable=0, dtype=float, tps=None, input_map=[]):
+        self.string_repr=tpsa.def_string_repr
         if tps is not None:
             if dtype in (float, complex):
                 self.dtype=dtype
@@ -17,6 +20,19 @@ class tpsa(object):
         if tpsa.initialized == False:
             print('TPSA class has to be initialized')
             exit(-1)
+
+        if len(input_map) > 0:
+            if dtype==float:
+                self._tps=tlib.PyDTPSA(input_map=input_map)
+                self.dtype=dtype
+                return
+
+            elif dtype==complex:
+                self._tps=tlib.PyCTPSA(input_map=input_map)
+                self.dtype = dtype
+                return
+            else:
+                raise ValueError("Unknown type")
 
         if dtype == float:
             self._tps = tlib.PyDTPSA(float(value), variable)
@@ -58,6 +74,10 @@ class tpsa(object):
 
     def cst(self):
         return self._tps.cst()
+    def linear(self):
+        result = tpsa(0.0, dtype=self.dtype)
+        result._tps=self._tps.linear()
+        return result
 
     '''@property
     def indices(self):
@@ -98,7 +118,27 @@ class tpsa(object):
         elif isinstance(l, list):
             return self._tps.element(*l)
 
+    def evaluate(self, values):
+        if len(values)==tpsa.dimension and isinstance(values[0], self.dtype):
+            return self._tps.evaluate(values)
+        else:
+            print("wrong vector length or wrong datatype")
 
+    def composite(self, values):
+        if len(values)==tpsa.dimension:
+            try:
+                tps_list=[v._tps for v in values]
+            except:
+                tps_list=[]
+                for v in values:
+                    if isinstance(v, tpsa):
+                        tps_list.append(v._tps)
+                    else:
+                        tps_list.append(tpsa(v,dtype=self.dtype)._tps)
+
+            return self._tps.composition(tps_list)
+        else:
+            print("wrong vector length, should be {}".format(tpsa.dimension))
 
     def derivative(self, dim, order=1):
         result=tpsa(0.0, dtype=self.dtype)
@@ -108,6 +148,14 @@ class tpsa(object):
         result=tpsa(0.0, dtype=self.dtype)
         result._tps=self._tps.integrate(dim, a0)
         return result
+
+    def conjugate(self, mode=1):
+        #mode=1; z1, z1*, z2, z2* ...
+        # mode=2; z1, z2,...,z1*, z2* ...
+        result=tpsa(0.0, dtype=self.dtype)
+        result._tps=self._tps.conjugate(mode)
+        return result
+
 
     def __iadd__(self, other):
         if isinstance(other, tpsa):
@@ -287,12 +335,73 @@ def initialize(dim, order, variable_name=None):
 def get_dimension():
     return tpsa.dimension
 
+def save(filename, *args):
+
+    import numpy as np
+    if len(args)==0:
+        print('Nothing saved.')
+        return
+    elif len(args)==1 and isinstance(args[0],list):
+        save(filename, *(args[0]))
+        return
+
+    with open(filename, 'wb') as f:
+        np.save(f, np.array([len(args), args[0].dimension, args[0].max_order]))
+        for arg in args:
+            np.save(f, np.array(arg.indices))
 
 
 
+def load(filename):
+    import numpy as np
+    ret=[]
+    maxord=0
+    maxterm=-1
+    with open(filename, 'rb') as f:
+        temp=np.load(f)
+        print("Loading {} TPS with {} variables upto {} orders".format(temp[0],temp[1],temp[2]))
+        if tpsa.initialized:
+            if tpsa.dimension!=temp[1]:
+                print('The saved TPSA had different dimension than current setting. Abort')
+                return
+            if tpsa.max_order<temp[2]:
+                from scipy.special import comb
+                maxterm=comb(tpsa.max_order+tpsa.dimension, tpsa.dimension, exact=True)
+        else:
+            tpsa.initialize(temp[1],temp[2])
+        for i in range(temp[0]):
+            temptps=np.load(f)
+            if maxterm>0 and len(temp)>maxterm:
+                temptps=temptps[0:maxterm]
+                print('Warning, the tpsa is truncated to from order {} to {}'.format(temp[2], tpsa.max_order))
+
+            ret.append(tpsa(input_map=temptps.tolist(), dtype=temptps.dtype) )
+            print("Success!")
+        return ret
 
 
+def inverse_map(list_of_tps):
+    import numpy as np
+    if tpsa.dimension!=len(list_of_tps):
+        print("The input is either over- or under- determined, inversion is not possible")
+        return
+    linear_map=np.eye(tpsa.dimension, dtype=list_of_tps[0].dtype)
+    nlm=[]
+    for i in range(tpsa.dimension):
+        linear_map[i, :] = list_of_tps[i].linear().indices[1:]
+        nlm.append(list_of_tps[i]-list_of_tps[i].linear())
+    try:
+        lminv=np.linalg.inv(linear_map)
+    except:
+        print("Linear map is non inversible, Abort")
 
-
-
+    Iv = [tpsa(0, i + 1, dtype=list_of_tps[0].dtype) for i in range(tpsa.dimension)]
+    results = [tpsa(0, i + 1, dtype=list_of_tps[0].dtype) for i in range(tpsa.dimension)]
+    temp = [tpsa(0, i + 1, dtype=list_of_tps[0].dtype) for i in range(tpsa.dimension)]
+    for i in range(tpsa.max_order):
+        for i in range(len(results)):
+            temp[i] = (Iv[i] - nlm[i].composite(results)) * lminv[i, i]
+        for i in range(len(results)):
+            results[i] = temp[i]
+    return results
 

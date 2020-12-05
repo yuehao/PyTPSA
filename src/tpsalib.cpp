@@ -69,6 +69,11 @@ CTPS<T>::CTPS(const CTPS<T> &M){
     //this->index=M.index;
 
 }
+template<class T>
+CTPS<T>::CTPS(const std::vector<T>& input_map){
+    this->set_map();
+
+}
 
 template<class T>
 unsigned long CTPS<T>::find_index(const std::vector<int>& indexmap) const{
@@ -155,6 +160,25 @@ const T CTPS<T>::element(const unsigned long & ind) const{
 }
 
 template<class T>
+void CTPS<T>::set_map(const std::vector<T>& input_map){
+    unsigned ord;
+    unsigned long term_of_ord;
+    for (ord=0; ord < CTPS<T>::Maximum_TPS_Degree+1; ord ++){
+        term_of_ord=binomial(CTPS<T>::TPS_Dim+ord, CTPS<T>::TPS_Dim);
+
+        if (input_map.size()>term_of_ord){
+            continue;
+        }
+    }
+    //std::cout<<ord<<'\t'<<term_of_ord<<'\t'<<input_map.size()<<std::endl;
+    this->degree=ord;
+    this->terms=term_of_ord;
+    this->map=input_map;
+    this->map.resize(this->terms, T(0.0));
+
+}
+
+template<class T>
 const T CTPS<T>::element(const std::vector<int>& ind) const{
     unsigned long result=this->find_index(ind);
     return map[result];
@@ -178,6 +202,39 @@ T CTPS<T>::evaluate(const std::vector<T>& inivalue) const{
         sum+=product*map[i];
     }
     return sum;
+}
+
+template <class T>
+CTPS<T> CTPS<T>::evaluate(const std::vector<CTPS<T> >& inivalue) const{
+    if (inivalue.size()!=this->TPS_Dim) {
+        throw std::runtime_error(std::string("Inconsistent dimension to evaluate CTPS"));
+    }
+    CTPS<T> sum(map[0]);
+    #pragma omp parallel for
+    for (int i=1; i<this->terms;i++){
+        std::vector<int> temp=this->polymap.getindexmap(i);
+        CTPS<T> product(T(1.0));
+        for (int j=0; j<this->TPS_Dim; j++) {
+            for (int k=0; k<temp[j+1]; k++)
+            product*=inivalue[j];
+        }
+        sum+=product*map[i];
+    }
+    return sum;
+}
+
+template<class T>
+CTPS<T> CTPS<T>::linear() const{
+    CTPS<T> result(T(0.0));
+    result.degree=1;
+    result.terms=(unsigned long)TPS_Dim+1;
+    result.map.resize(result.terms);
+    for (unsigned long i=0;i<std::min(result.terms,this->terms);i++){
+        //std::cout<<i<<std::endl;
+        result.map[i]=this->map[i];
+    }
+    return result;
+
 }
 
 template<class T>
@@ -264,6 +321,72 @@ CTPS<T> CTPS<T>::integrate(const int& ndim, const T &a0) const {
     }
     else throw std::runtime_error(std::string("Inconsistent dimension to take integration"));
     return CTPS();
+}
+
+template <class T>
+CTPS<T> CTPS<T>::conjugate(const int &mode) const{
+    CTPS<T> temp(*this);
+    if (this->TPS_Dim % 2 !=0 ) return temp;
+    std::vector<int> nid, ncid;
+    nid.resize(this->TPS_Dim / 2, 0);
+    ncid.resize(this->TPS_Dim / 2, 0);
+    if (mode==1) { //z1, z1*, z2, z2* ...
+        for (int i = 1; i<=this->TPS_Dim / 2; i++){
+            nid[i-1]=i*2-1;
+            ncid[i-1]=i*2;
+        }
+    }
+    if (mode==2) { //z1, z2, z3..., z1*, z2*, z2*...
+        for (int i = 1; i<=this->TPS_Dim / 2; i++){
+            nid[i-1]=i;
+            ncid[i-1]=i+this->TPS_Dim / 2;
+        }
+    }
+    for (unsigned long j = 1; j<this->terms; j++){
+            std::vector<int> vthis=polymap.getindexmap(j);
+            for (int i = 0; i<nid.size(); i++){
+                int temp=vthis[nid[i]];
+                vthis[nid[i]]=vthis[ncid[i]];
+                vthis[ncid[i]]=temp;
+            }
+            unsigned long newj=this->find_index(vthis);
+            temp.map[newj]=(this->map[j]);
+        }
+        return temp;
+}
+
+
+template <>
+CTPS<std::complex<double>> CTPS<std::complex<double>>::conjugate(const int &mode) const{
+    CTPS<std::complex<double> > temp(*this);
+    if (this->TPS_Dim % 2 !=0 ) return temp;
+    std::vector<int> nid, ncid;
+    nid.resize(this->TPS_Dim / 2, 0);
+    ncid.resize(this->TPS_Dim / 2, 0);
+    if (mode==1) { //z1, z1*, z2, z2* ...
+        for (int i = 1; i<=this->TPS_Dim / 2; i++){
+            nid[i-1]=i*2-1;
+            ncid[i-1]=i*2;
+        }
+    }
+    if (mode==2) { //z1, z1*, z2, z2* ...
+        for (int i = 1; i<=this->TPS_Dim / 2; i++){
+            nid[i-1]=i;
+            ncid[i-1]=i+this->TPS_Dim / 2;
+        }
+    }
+    for (unsigned long j = 1; j<this->terms; j++){
+            std::vector<int> vthis=polymap.getindexmap(j);
+            for (int i = 0; i<nid.size(); i++){
+                int temp=vthis[nid[i]];
+                vthis[nid[i]]=vthis[ncid[i]];
+                vthis[ncid[i]]=temp;
+            }
+            unsigned long newj=this->find_index(vthis);
+
+            temp.map[newj]=std::conj(this->map[j]);
+        }
+    return temp;
 }
 
 template<class T>

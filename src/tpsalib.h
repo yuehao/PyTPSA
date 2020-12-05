@@ -64,6 +64,8 @@ public:
     CTPS(const T &a, const int &);  //Variable
     
     CTPS(const CTPS<T> &);
+
+    CTPS(const std::vector<T>& input_map);
     
     ~CTPS() {}
     
@@ -85,6 +87,7 @@ public:
     const T element(const std::vector<int> &indmap) const;
 
     const std::vector<T> get_map() const {return this->map;}
+    void set_map(const std::vector<T>& input_map);
     
     std::ostream&  print_by_order(std::ostream& output) const;
     
@@ -111,11 +114,15 @@ public:
     bool is_equal(const CTPS<T> &M) const;
     
     T evaluate(const std::vector<T> &value) const;
+    CTPS<T> evaluate(const std::vector<CTPS<T> > &) const;
     
     CTPS<T> derivative(const int &ndim, const int &order = 1) const;
     CTPS<T> integrate(const int &ndim, const T& ) const;
+    CTPS<T> conjugate(const int &mode=1) const;
+
     
     inline const T cst() const { return map[0]; }
+    CTPS<T> linear() const;
 
     template<class U> CTPS<U> convert_to() const{
         CTPS<U> temp;
