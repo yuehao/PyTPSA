@@ -464,11 +464,6 @@ cdef class PyCTPSA:
 
 
 
-
-
-
-
-
 def inv(a):
     cdef PyCTPSA resultc
     cdef PyDTPSA resultd
