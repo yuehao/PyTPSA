@@ -373,10 +373,15 @@ def load(filename):
             temptps=np.load(f)
             if maxterm>0 and len(temp)>maxterm:
                 temptps=temptps[0:maxterm]
-                print('Warning, the tpsa is truncated to from order {} to {}'.format(temp[2], tpsa.max_order))
-
-            ret.append(tpsa(input_map=temptps.tolist(), dtype=temptps.dtype) )
-            print("Success!")
+                print('Warning, the tpsa is truncated from order {} to {}'.format(temp[2], tpsa.max_order))
+            if isinstance(temptps[0], np.floating):
+                dtype = float
+            elif isinstance(temptps[0], np.complexfloating):
+                dtype = complex
+            else:
+                raise ValueError("Unknown type")
+            ret.append(tpsa(input_map=temptps.tolist(), dtype=dtype) )
+        print("Success!")
         return ret
 
 
