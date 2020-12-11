@@ -1,5 +1,6 @@
 from .cython import tpsalib as tlib
 import cmath
+import copy
 
 
 
@@ -79,20 +80,20 @@ class tpsa(object):
         result._tps=self._tps.linear()
         return result
 
-    '''@property
-    def indices(self):
+    def pvl(self):
         power_list=[]
         value_list=[]
-        for i in range(self.get_terms()):
+        for i in range(self.get_max_terms()):
             power = self.find_power(i)
             value = self.element(power)
-            if value==0 and i>0:
-                continue
+            #if value==0 and i>0:
+            #    continue
 
             power_list.append(power[1:])
             value_list.append(value)
         return power_list, value_list
-'''
+
+
     @property
     def indices(self):
         return self._tps.indices()
@@ -155,6 +156,9 @@ class tpsa(object):
         result=tpsa(0.0, dtype=self.dtype)
         result._tps=self._tps.conjugate(mode)
         return result
+
+    def copy(self):
+        return tpsa(dtype=self.dtype, tps=self._tps)
 
 
     def __iadd__(self, other):
@@ -403,10 +407,10 @@ def inverse_map(list_of_tps):
     Iv = [tpsa(0, i + 1, dtype=list_of_tps[0].dtype) for i in range(tpsa.dimension)]
     results = [tpsa(0, i + 1, dtype=list_of_tps[0].dtype) for i in range(tpsa.dimension)]
     temp = [tpsa(0, i + 1, dtype=list_of_tps[0].dtype) for i in range(tpsa.dimension)]
-    for i in range(tpsa.max_order):
-        for i in range(len(results)):
-            temp[i] = (Iv[i] - nlm[i].composite(results)) * lminv[i, i]
-        for i in range(len(results)):
-            results[i] = temp[i]
+    for k in range(tpsa.max_order):
+        for i in range(tpsa.dimension):
+            temp[i] = (Iv[i] - nlm[i].composite(results))
+        for i in range(tpsa.dimension):
+            results=lminv.dot(temp).tolist()
     return results
 

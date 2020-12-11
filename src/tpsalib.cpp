@@ -523,7 +523,7 @@ CTPS<T>& CTPS<T>::operator/=(const CTPS<T>& M){
         return *this;
     }
     if (M.get_degree()==0){
-        #pragma omp parallel for schedule(static)
+        //#pragma omp parallel for schedule(static)
         for (int i=0; i<this->terms; i++){
             this->map[i]/=M.map[0];
         }
