@@ -1,6 +1,6 @@
 from .cython import tpsalib as tlib
 import cmath
-import copy
+
 
 
 
@@ -137,7 +137,8 @@ class tpsa(object):
                     else:
                         tps_list.append(tpsa(v,dtype=self.dtype)._tps)
 
-            return self._tps.composition(tps_list)
+            temp = self._tps.composition(tps_list)
+            return tpsa(tps=temp, dtype=self.dtype)
         else:
             print("wrong vector length, should be {}".format(tpsa.dimension))
 
