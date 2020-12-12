@@ -151,11 +151,19 @@ class tpsa(object):
         result._tps=self._tps.integrate(dim, a0)
         return result
 
-    def conjugate(self, mode=1):
-        #mode=1; z1, z1*, z2, z2* ...
+    def conjugate(self, mode=''):
+        # mode=1; z1, z1*, z2, z2* ...
         # mode=2; z1, z2,...,z1*, z2* ...
-        result=tpsa(0.0, dtype=self.dtype)
-        result._tps=self._tps.conjugate(mode)
+        modenum = 0
+        if mode.upper() == 'COMPLEXPAIR' or mode.upper() == 'CP':
+            modenum = 1
+        elif mode.upper() == 'REAL' or mode.upper() == 'R':
+            modenum = 2
+        else:
+            print("INVALID MODE, supported mode are 'ComplexPair' or 'Real'")
+            return None
+        result = tpsa(0.0, dtype=self.dtype)
+        result._tps = self._tps.conjugate(modenum)
         return result
 
     def copy(self):

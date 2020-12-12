@@ -336,23 +336,23 @@ CTPS<T> CTPS<T>::conjugate(const int &mode) const{
             ncid[i-1]=i*2;
         }
     }
-    if (mode==2) { //z1, z2, z3..., z1*, z2*, z2*...
-        for (int i = 1; i<=this->TPS_Dim / 2; i++){
-            nid[i-1]=i;
-            ncid[i-1]=i+this->TPS_Dim / 2;
-        }
-    }
+    //if (mode==2) { //z1, z2, z3..., z1*, z2*, z2*...
+    //    for (int i = 1; i<=this->TPS_Dim / 2; i++){
+    //        nid[i-1]=i;
+    //        ncid[i-1]=i+this->TPS_Dim / 2;
+    //    }
+    //}
     for (unsigned long j = 1; j<this->terms; j++){
             std::vector<int> vthis=polymap.getindexmap(j);
             for (int i = 0; i<nid.size(); i++){
-                int temp=vthis[nid[i]];
+                int k=vthis[nid[i]];
                 vthis[nid[i]]=vthis[ncid[i]];
-                vthis[ncid[i]]=temp;
+                vthis[ncid[i]]=k;
             }
             unsigned long newj=this->find_index(vthis);
             temp.map[newj]=(this->map[j]);
         }
-        return temp;
+    return temp;
 }
 
 
@@ -369,18 +369,18 @@ CTPS<std::complex<double>> CTPS<std::complex<double>>::conjugate(const int &mode
             ncid[i-1]=i*2;
         }
     }
-    if (mode==2) { //z1, z1*, z2, z2* ...
-        for (int i = 1; i<=this->TPS_Dim / 2; i++){
-            nid[i-1]=i;
-            ncid[i-1]=i+this->TPS_Dim / 2;
-        }
-    }
+    //if (mode==2) { //z1, z1*, z2, z2* ...
+    //    for (int i = 1; i<=this->TPS_Dim / 2; i++){
+    //       nid[i-1]=i;
+    //       ncid[i-1]=i+this->TPS_Dim / 2;
+    //  }
+    //}
     for (unsigned long j = 1; j<this->terms; j++){
             std::vector<int> vthis=polymap.getindexmap(j);
             for (int i = 0; i<nid.size(); i++){
-                int temp=vthis[nid[i]];
+                int k=vthis[nid[i]];
                 vthis[nid[i]]=vthis[ncid[i]];
-                vthis[ncid[i]]=temp;
+                vthis[ncid[i]]=k;
             }
             unsigned long newj=this->find_index(vthis);
 
