@@ -324,6 +324,15 @@ CTPS<T> CTPS<T>::integrate(const int& ndim, const T &a0) const {
 }
 
 template <class T>
+void CTPS<T>::machine_precision_roundoff(){
+    for (unsigned long i=0;i<this->terms;i++){
+        if (std::abs(this->map[i])<inf_epsilon)
+            this->map[i]=0;
+    }
+    return;
+}
+
+template <class T>
 CTPS<T> CTPS<T>::conjugate(const int &mode) const{
     CTPS<T> temp(*this);
     if (this->TPS_Dim % 2 !=0 ) return temp;
@@ -336,7 +345,7 @@ CTPS<T> CTPS<T>::conjugate(const int &mode) const{
             ncid[i-1]=i*2;
         }
     }
-    //if (mode==2) { //z1, z2, z3..., z1*, z2*, z2*...
+    //if (mode==2) { //all real
     //    for (int i = 1; i<=this->TPS_Dim / 2; i++){
     //        nid[i-1]=i;
     //        ncid[i-1]=i+this->TPS_Dim / 2;
@@ -344,7 +353,7 @@ CTPS<T> CTPS<T>::conjugate(const int &mode) const{
     //}
     for (unsigned long j = 1; j<this->terms; j++){
             std::vector<int> vthis=polymap.getindexmap(j);
-            for (int i = 0; i<nid.size(); i++){
+            if (mode==1) for (int i = 0; i<nid.size(); i++){
                 int k=vthis[nid[i]];
                 vthis[nid[i]]=vthis[ncid[i]];
                 vthis[ncid[i]]=k;
@@ -371,19 +380,18 @@ CTPS<std::complex<double>> CTPS<std::complex<double>>::conjugate(const int &mode
     }
     //if (mode==2) { //z1, z1*, z2, z2* ...
     //    for (int i = 1; i<=this->TPS_Dim / 2; i++){
-    //       nid[i-1]=i;
-    //       ncid[i-1]=i+this->TPS_Dim / 2;
-    //  }
+    //        nid[i-1]=i;
+    //        ncid[i-1]=i+this->TPS_Dim / 2;
+    //    }
     //}
     for (unsigned long j = 1; j<this->terms; j++){
             std::vector<int> vthis=polymap.getindexmap(j);
-            for (int i = 0; i<nid.size(); i++){
+            if (mode==1) for (int i = 0; i<nid.size(); i++){
                 int k=vthis[nid[i]];
                 vthis[nid[i]]=vthis[ncid[i]];
                 vthis[ncid[i]]=k;
             }
             unsigned long newj=this->find_index(vthis);
-
             temp.map[newj]=std::conj(this->map[j]);
         }
     return temp;
@@ -396,7 +404,7 @@ std::ostream& CTPS<T>::print_by_order(std::ostream& output) const {
     int just_endl=0;
     output<<"Order 0:"<<std::endl;
     for (int i=0;i<this->terms;i++){
-        if (std::abs(this->map[i])==0 && i > 0) continue;
+        if (std::abs(this->map[i])<inf_epsilon && i > 0) continue;
         std::vector<int> temp=this->polymap.getindexmap(i);
         if (temp[0] > current_order){
             if (just_endl==0) output<<std::endl;

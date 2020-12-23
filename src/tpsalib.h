@@ -19,7 +19,7 @@
 #include "rational.h"
 //using namespace std;
 const int MAX_TPS_ORDERS=6;
-const double inf_epsilon=1e-15;
+const double inf_epsilon=1e-16;
 
 
 
@@ -88,7 +88,9 @@ public:
 
     const std::vector<T> get_map() const {return this->map;}
     void set_map(const std::vector<T>& input_map);
-    
+
+    void machine_precision_roundoff();
+
     std::ostream&  print_by_order(std::ostream& output) const;
     
     //operator double() const;

@@ -398,7 +398,7 @@ def load(filename):
         return ret
 
 
-def inverse_map(list_of_tps):
+def inverse_map(list_of_tps, initial_trial=None, iteration_limit=0):
     import numpy as np
     if tpsa.dimension!=len(list_of_tps):
         print("The input is either over- or under- determined, inversion is not possible")
@@ -412,14 +412,19 @@ def inverse_map(list_of_tps):
         lminv=np.linalg.inv(linear_map)
     except:
         print("Linear map is non inversible, Abort")
+        return None
 
     Iv = [tpsa(0, i + 1, dtype=list_of_tps[0].dtype) for i in range(tpsa.dimension)]
     results = [tpsa(0, i + 1, dtype=list_of_tps[0].dtype) for i in range(tpsa.dimension)]
+    if initial_trial is not None:
+        results=initial_trial
     temp = [tpsa(0, i + 1, dtype=list_of_tps[0].dtype) for i in range(tpsa.dimension)]
-    for k in range(tpsa.max_order):
+    iterations=tpsa.max_order
+    if iteration_limit>0 and iteration_limit<iterations:
+        iterations=iteration_limit
+    for k in range(iterations):
         for i in range(tpsa.dimension):
             temp[i] = (Iv[i] - nlm[i].composite(results))
         for i in range(tpsa.dimension):
             results=lminv.dot(temp).tolist()
     return results
-
