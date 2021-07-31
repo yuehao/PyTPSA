@@ -83,9 +83,13 @@ class tpsa(object):
     def pvl(self):
         power_list=[]
         value_list=[]
+        maxind=len(self.indices)
         for i in range(self.get_max_terms()):
             power = self.find_power(i)
-            value = self.element(power)
+            if i<maxind:
+                value = self.element(power)
+            else:
+                value = 0
             #if value==0 and i>0:
             #    continue
 
