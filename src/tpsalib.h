@@ -193,7 +193,7 @@ public:
         for (int i = 2; i <= M.Maximum_TPS_Degree; i++) {
             //T index=pow(-1.0, i+1)*doublefactorial(2*i-3)/pow(a0, i-0.5)/doublefactorial(2*i);
             T index = T(1.0 * doublefactorial(2 * i - 3) / doublefactorial(2 * i));
-            term_by_order = (-temp) * term_by_order / a0;
+            term_by_order = (-temp) * term_by_order / M.cst();
             sum += (term_by_order * index);
         }
         sum += a0;
