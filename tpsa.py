@@ -176,7 +176,7 @@ class tpsa(object):
 
     def __iadd__(self, other):
         if isinstance(other, tpsa):
-            self._tps+=other._tps
+            self._tps += other._tps
         else:
             self = self + other
         return self
@@ -264,7 +264,10 @@ class tpsa(object):
 
     def __rtruediv__(self, other):
         result = tpsa(0.0, dtype=self.dtype)
-        result._tps = other / self._tps
+        if isinstance(other, tpsa):
+            result._tps = self._tps / other._tps
+        else:
+            result._tps = (tpsa(other, dtype=self.dtype))._tps / self._tps
         return result
 
     def __neg__(self):
